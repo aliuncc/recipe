@@ -1,9 +1,16 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import User, Recipe, Comment
 
-# Register your models here.
-from .models import Room, Topic, Message, User
+# Custom User Admin
+class CustomUserAdmin(UserAdmin):
+    model = User
+    list_display = ('username', 'email', 'name', 'is_staff', 'is_active')
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {'fields': ('name', 'bio', 'avatar')}),
+    )
 
-admin.site.register(User)
-admin.site.register(Room)
-admin.site.register(Topic)
-admin.site.register(Message)
+# Register models
+admin.site.register(User, CustomUserAdmin)
+admin.site.register(Recipe)
+admin.site.register(Comment)
