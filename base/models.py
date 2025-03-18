@@ -8,11 +8,19 @@ class User(AbstractUser):
     bio = models.TextField(null=True, blank=True)
     avatar = models.ImageField(null=True, default="avatar.svg")
 
+    followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)  # Followers
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.username
+
+    def followers_count(self):
+        return self.followers.count()  # Count of followers
+
+    def following_count(self):
+        return self.following.count()  # Count of users this user follows
 
 
 # Recipe Model
@@ -35,9 +43,13 @@ class Recipe(models.Model):
     cuisine = models.CharField(max_length=50, choices=CUISINE_CHOICES, default="Other")
     image = models.ImageField(upload_to="recipes/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(User, related_name="recipe_likes", blank=True)  # Likes
 
     def __str__(self):
         return self.name
+
+    def total_likes(self):
+        return self.likes.count()  # Count of likes on this recipe
 
 
 # Comment Model for Recipe
