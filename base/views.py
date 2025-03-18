@@ -2,13 +2,26 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import Recipe, Comment
+from .models import Recipe, Comment, User
 from .forms import RecipeForm
 
 # Home Page (Display Recipes)
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Recipe
+
 def home(request):
-    recipes = Recipe.objects.all()
-    return render(request, 'base/home.html', {'recipes': recipes})
+    q = request.GET.get('q', '')  # Get search query, default to empty string if none
+
+    recipes = Recipe.objects.filter(
+        Q(name__icontains=q) |
+        Q(description__icontains=q) |
+        Q(cuisine__icontains=q)
+    )
+    users = User.objects.all()
+
+    return render(request, 'base/home.html', {'recipes': recipes, 'q': q, 'users': users})
+
 
 # Recipe Detail Page + Add Comment
 def recipe_detail(request, recipe_id):
@@ -66,3 +79,9 @@ def register_user(request):
 def logout_user(request):
     logout(request)
     return redirect("home")
+
+
+
+def profile(request, username):
+    user = get_object_or_404(User, username=username)  # Get user or return 404
+    return render(request, 'base/profile.html', {'user': user})
