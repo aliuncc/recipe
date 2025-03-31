@@ -1,0 +1,25 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <h1>{{ recipe.name }}</h1>
+    <p>{{ recipe.description }}</p>
+    <p><strong>Ingredients:</strong> {{ recipe.ingredients }}</p>
+    <p><strong>Cuisine:</strong> {{ recipe.cuisine }}</p>
+
+    <h3>Comments:</h3>
+    {% for comment in comments %}
+        <p><strong>{{ comment.user.username }}:</strong> {{ comment.body }}</p>
+    {% empty %}
+        <p>No comments yet.</p>
+    {% endfor %}
+
+    {% if request.user.is_authenticated %}
+        <form method="POST">
+            {% csrf_token %}
+            <textarea name="comment_body" placeholder="Add a comment..." required></textarea>
+            <button type="submit">Post Comment</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}">Login</a> to comment.</p>
+    {% endif %}
+{% endblock content %}
