@@ -22,10 +22,18 @@
                     </div>
 
                     <div class="recipe-meta mb-4">
-                        <span class="text-muted">By {{ recipe.user.username }} | Posted {{ recipe.created|date:"F j, Y" }}</span>
+                        <div class="d-flex align-items-center mb-2">
+                            {% if recipe.user.avatar %}
+                            <img src="{{ recipe.user.avatar.url }}" class="rounded-circle me-2" width="30" height="30" alt="Author avatar">
+                            {% else %}
+                            <img src="{% static 'images/avatar.svg' %}" class="rounded-circle me-2" width="30" height="30" alt="Author avatar">
+                            {% endif %}
+                            <span class="text-muted">Posted by <strong>{{ recipe.user.name|default:recipe.user.username }}</strong> on {{ recipe.created_at|date:"F j, Y" }}</span>
+                        </div>
                     </div>
 
                     <div class="recipe-description mb-4">
+                        <h3 class="section-title">Instructions</h3>
                         <p class="lead">{{ recipe.description }}</p>
                     </div>
 
@@ -49,7 +57,7 @@
                     <form action="" method="POST" class="mb-4">
                         {% csrf_token %}
                         <div class="form-group">
-                            <textarea name="body" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+                            <textarea name="comment_body" class="form-control" rows="3" placeholder="Share your thoughts about this recipe..."></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Post Comment</button>
                     </form>
@@ -67,7 +75,7 @@
                                 <div class="flex-grow-1 ms-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-1">{{ comment.user.username }}</h6>
-                                        <small class="text-muted">{{ comment.created|date:"F j, Y" }}</small>
+                                        <small class="text-muted">{{ comment.created_at|date:"F j, Y" }}</small>
                                     </div>
                                     <p class="mb-0">{{ comment.body }}</p>
                                 </div>
@@ -87,7 +95,7 @@
                     <div class="recipe-stats">
                         <div class="stat-item mb-2">
                             <span class="stat-label">Cuisine Type:</span>
-                            <span class="stat-value">{{ recipe.cuisine_type }}</span>
+                            <span class="stat-value">{{ recipe.cuisine }}</span>
                         </div>
                         <div class="stat-item mb-2">
                             <span class="stat-label">Comments:</span>
@@ -105,12 +113,21 @@
                 <div class="card-body p-4">
                     <h4 class="card-title mb-3">About the Author</h4>
                     <div class="d-flex align-items-center mb-3">
+                        {% if recipe.user.avatar %}
+                        <img src="{{ recipe.user.avatar.url }}" class="rounded-circle me-3" width="50" height="50" alt="Author avatar">
+                        {% else %}
                         <img src="{% static 'images/avatar.svg' %}" class="rounded-circle me-3" width="50" height="50" alt="Author avatar">
+                        {% endif %}
                         <div>
-                            <h5 class="mb-1">{{ recipe.user.username }}</h5>
+                            <h5 class="mb-1">{{ recipe.user.name|default:recipe.user.username }}</h5>
                             <p class="text-muted mb-0">Member since {{ recipe.user.date_joined|date:"F Y" }}</p>
                         </div>
                     </div>
+                    {% if recipe.user.bio %}
+                    <div class="author-bio mt-3">
+                        <p class="mb-0">{{ recipe.user.bio }}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -217,6 +234,16 @@
     .btn-primary:hover {
         background-color: #2563eb;
         border-color: #2563eb;
+    }
+
+    .badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+    }
+
+    .cuisine-type {
+        margin-top: 0.5rem;
     }
 </style>
 {% endblock content %}
