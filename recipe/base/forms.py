@@ -28,9 +28,43 @@ class UserForm(ModelForm):
 
 # Recipe Creation Form
 class RecipeForm(ModelForm):
+    ingredients = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 8,
+            'placeholder': 'Enter each ingredient on a new line, for example:\n2 cups flour\n1 cup sugar\n3 eggs'
+        }),
+        help_text='Enter each ingredient on a new line'
+    )
+    
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 5,
+            'placeholder': 'Describe your recipe, including preparation steps...'
+        })
+    )
+    
     class Meta:
         model = Recipe
         fields = ['name', 'description', 'ingredients', 'cuisine', 'image']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'placeholder': 'Enter recipe name',
+                'class': 'form-control'
+            }),
+            'cuisine': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'form-control'
+            })
+        }
+        labels = {
+            'name': 'Recipe Name',
+            'description': 'Instructions',
+            'ingredients': 'Ingredients List',
+            'cuisine': 'Cuisine Type',
+            'image': 'Recipe Image'
+        }
 
 # Comment Form for Recipes
 class CommentForm(ModelForm):

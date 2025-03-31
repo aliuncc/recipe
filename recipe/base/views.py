@@ -25,15 +25,24 @@ def home(request):
 # Recipe Detail Page + Add Comment
 def recipe_detail(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    comments = recipe.comments.all()
+    comments = recipe.comments.all().order_by('-created_at')  # Get newest comments first
 
     if request.method == "POST" and request.user.is_authenticated:
         comment_body = request.POST.get("comment_body")
         if comment_body:
             Comment.objects.create(user=request.user, recipe=recipe, body=comment_body)
-        return redirect('recipe_detail', recipe_id=recipe.id)
+            return redirect('recipe_detail', recipe_id=recipe.id)
 
-    return render(request, 'base/recipe_detail.html', {'recipe': recipe, 'comments': comments})
+    # Process ingredients list
+    ingredients = [ing.strip() for ing in recipe.ingredients.split('\n') if ing.strip()]
+
+    context = {
+        'recipe': recipe,
+        'comments': comments,
+        'ingredients': ingredients,
+    }
+    
+    return render(request, 'base/recipe_detail.html', context)
 
 # Create a Recipe (Authenticated Users Only)
 @login_required
@@ -49,6 +58,40 @@ def create_recipe(request):
             return redirect('home')
 
     return render(request, 'base/recipe_form.html', {'form': form})
+
+# Update Recipe
+@login_required
+def update_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    
+    # Check if the user is the owner of the recipe
+    if request.user != recipe.user:
+        return redirect('home')
+    
+    form = RecipeForm(instance=recipe)
+    
+    if request.method == "POST":
+        form = RecipeForm(request.POST, request.FILES, instance=recipe)
+        if form.is_valid():
+            form.save()
+            return redirect('recipe_detail', recipe_id=recipe.id)
+    
+    return render(request, 'base/recipe_form.html', {'form': form})
+
+# Delete Recipe
+@login_required
+def delete_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    
+    # Check if the user is the owner of the recipe
+    if request.user != recipe.user:
+        return redirect('home')
+    
+    if request.method == "POST":
+        recipe.delete()
+        return redirect('home')
+    
+    return render(request, 'base/delete.html', {'obj': recipe})
 
 # Login View
 def login_user(request):
