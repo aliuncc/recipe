@@ -6,8 +6,10 @@ from .forms import RecipeForm, MyUserCreationForm
 
 # Home Page (Display Recipes)
 from django.shortcuts import render
-from django.db.models import Q
+from django.db.models import Q, Count
 from .models import Recipe
+from django.utils import timezone
+from datetime import timedelta
 
 def home(request):
     q = request.GET.get('q', '')  # Get search query, default to empty string if none
@@ -21,6 +23,66 @@ def home(request):
 
     return render(request, 'base/home.html', {'recipes': recipes, 'q': q, 'users': users})
 
+def popular_recipes(request):
+    # Get recipes with the most comments
+    recipes = Recipe.objects.annotate(
+        comment_count=Count('comments')
+    ).order_by('-comment_count')[:10]
+    
+    context = {
+        'recipes': recipes,
+        'title': 'Popular Recipes',
+        'users': User.objects.all()
+    }
+    return render(request, 'base/home.html', context)
+
+def newest_recipes(request):
+    # Get recipes from the last 7 days
+    recent_date = timezone.now() - timedelta(days=7)
+    recipes = Recipe.objects.filter(
+        created_at__gte=recent_date
+    ).order_by('-created_at')
+    
+    context = {
+        'recipes': recipes,
+        'title': 'Newest Recipes',
+        'users': User.objects.all()
+    }
+    return render(request, 'base/home.html', context)
+
+def trending_cuisines(request):
+    # Get most used cuisines in the last 30 days
+    recent_date = timezone.now() - timedelta(days=30)
+    trending = Recipe.objects.filter(
+        created_at__gte=recent_date
+    ).values('cuisine').annotate(
+        count=Count('id')
+    ).order_by('-count')
+
+    # Get recipes from trending cuisines
+    recipes = Recipe.objects.filter(
+        cuisine__in=[item['cuisine'] for item in trending[:5]]
+    ).order_by('-created_at')
+    
+    context = {
+        'recipes': recipes,
+        'title': 'Trending Cuisines',
+        'users': User.objects.all()
+    }
+    return render(request, 'base/home.html', context)
+
+def top_rated(request):
+    # Get recipes with most likes
+    recipes = Recipe.objects.annotate(
+        like_count=Count('likes')
+    ).order_by('-like_count')[:10]
+    
+    context = {
+        'recipes': recipes,
+        'title': 'Top Rated Recipes',
+        'users': User.objects.all()
+    }
+    return render(request, 'base/home.html', context)
 
 # Recipe Detail Page + Add Comment
 def recipe_detail(request, recipe_id):
