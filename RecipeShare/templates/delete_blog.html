@@ -1,0 +1,20 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h1>Delete Blog Post</h1>
+        <p>Are you sure you want to delete "{{ blog.title }}"?</p>
+        <p class="warning-text">This action cannot be undone.</p>
+        
+        <form method="POST" class="delete-form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Delete Blog</button>
+                <a href="{% url 'blog_detail' blog.id %}" class="btn btn-warning">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %} 

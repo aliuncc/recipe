@@ -1,0 +1,65 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="blog-header">
+        <h1>Blog</h1>
+        <form class="blog-search" method="GET" action="{% url 'blog' %}">
+            <input type="text" name="q" placeholder="Search blogs..." value="{{ request.GET.q }}">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <div class="tags-section">
+        <h2>Categories</h2>
+        <div class="tags-list">
+            {% for tag in tags %}
+                <a href="{% url 'tag_blogs' tag.slug %}" 
+                   class="tag {% if tag.slug == selected_tag %}active{% endif %}">
+                    {{ tag.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'create_blog' %}" class="btn btn--main">Create New Blog</a>
+    {% else %}
+        <p class="login-message">Please <a href="{% url 'login' %}">sign in</a> to create a blog post.</p>
+    {% endif %}
+
+    {% if tag_name %}
+        <h2 class="tag-title">Blogs tagged with "{{ tag_name }}"</h2>
+    {% endif %}
+
+    <div class="blog-list">
+        {% for blog in blogs %}
+            <div class="blog-card">
+                <div class="blog-image">
+                    <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                </div>
+                <div class="blog-content">
+                    <h2><a href="{% url 'blog_detail' blog.id %}">{{ blog.title }}</a></h2>
+                    <div class="blog-meta">
+                        <span>By <a href="{% url 'profile' blog.user.username %}">{{ blog.user.username }}</a></span>
+                        <span>{{ blog.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <p class="blog-preview">{{ blog.content|truncatewords:50 }}</p>
+                    <div class="blog-tags">
+                        {% for tag in blog.tags.all %}
+                            <a href="{% url 'tag_blogs' tag.slug %}" class="tag">{{ tag.name }}</a>
+                        {% endfor %}
+                    </div>
+                    <div class="blog-stats">
+                        <span>❤️ {{ blog.like_count }}</span>
+                        <span>💬 {{ blog.comments.count }}</span>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No blogs found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %} 
