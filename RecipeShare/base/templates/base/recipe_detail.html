@@ -1,0 +1,253 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Main Recipe Content -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                {% if recipe.image %}
+                <img src="{{ recipe.image.url }}" class="card-img-top recipe-image" alt="{{ recipe.name }}">
+                {% endif %}
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="recipe-title mb-0">{{ recipe.name }}</h1>
+                        {% if request.user == recipe.user %}
+                        <div>
+                            <a href="{% url 'update-recipe' recipe.id %}" class="btn btn-outline-primary me-2">Edit</a>
+                            <a href="{% url 'delete-recipe' recipe.id %}" class="btn btn-outline-danger">Delete</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="recipe-meta mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            {% if recipe.user.avatar %}
+                            <img src="{{ recipe.user.avatar.url }}" class="rounded-circle me-2" width="30" height="30" alt="Author avatar">
+                            {% else %}
+                            <img src="{% static 'images/avatar.svg' %}" class="rounded-circle me-2" width="30" height="30" alt="Author avatar">
+                            {% endif %}
+                            <span class="text-muted">Posted by <strong>{{ recipe.user.name|default:recipe.user.username }}</strong> on {{ recipe.created_at|date:"F j, Y" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="recipe-description mb-4">
+                        <p class="lead">{{ recipe.description }}</p>
+                    </div>
+
+                    <div class="recipe-details mb-4">
+                        <h3 class="section-title">Ingredients</h3>
+                        <ul class="ingredients-list">
+                            {% for ingredient in ingredients %}
+                            <li>{{ ingredient }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h3 class="section-title mb-4">Comments ({{ comments.count }})</h3>
+                    
+                    {% if request.user.is_authenticated %}
+                    <form action="" method="POST" class="mb-4">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <textarea name="comment_body" class="form-control" rows="3" placeholder="Share your thoughts about this recipe..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Post Comment</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted mb-4">Please <a href="{% url 'login' %}">login</a> to leave a comment.</p>
+                    {% endif %}
+
+                    <div class="comments-list">
+                        {% for comment in comments %}
+                        <div class="comment mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <img src="{% static 'images/avatar.svg' %}" class="rounded-circle" width="40" height="40" alt="User avatar">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-1">{{ comment.user.username }}</h6>
+                                        <small class="text-muted">{{ comment.created_at|date:"F j, Y" }}</small>
+                                    </div>
+                                    <p class="mb-0">{{ comment.body }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Recipe Stats</h4>
+                    <div class="recipe-stats">
+                        <div class="stat-item mb-2">
+                            <span class="stat-label">Cuisine Type:</span>
+                            <span class="stat-value">{{ recipe.cuisine }}</span>
+                        </div>
+                        <div class="stat-item mb-2">
+                            <span class="stat-label">Comments:</span>
+                            <span class="stat-value">{{ comments.count }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Posted:</span>
+                            <span class="stat-value">{{ recipe.created|date:"F j, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">About the Author</h4>
+                    <div class="d-flex align-items-center mb-3">
+                        {% if recipe.user.avatar %}
+                        <img src="{{ recipe.user.avatar.url }}" class="rounded-circle me-3" width="50" height="50" alt="Author avatar">
+                        {% else %}
+                        <img src="{% static 'images/avatar.svg' %}" class="rounded-circle me-3" width="50" height="50" alt="Author avatar">
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-1">{{ recipe.user.name|default:recipe.user.username }}</h5>
+                            <p class="text-muted mb-0">Member since {{ recipe.user.date_joined|date:"F Y" }}</p>
+                        </div>
+                    </div>
+                    {% if recipe.user.bio %}
+                    <div class="author-bio mt-3">
+                        <p class="mb-0">{{ recipe.user.bio }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .recipe-image {
+        max-height: 500px;
+        object-fit: cover;
+    }
+
+    .recipe-title {
+        color: #2d3748;
+        font-size: 2.25rem;
+        font-weight: 700;
+    }
+
+    .section-title {
+        color: #2d3748;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .ingredients-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .ingredients-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #4a5568;
+    }
+
+    .ingredients-list li:last-child {
+        border-bottom: none;
+    }
+
+    .recipe-meta {
+        color: #718096;
+        font-size: 0.95rem;
+    }
+
+    .recipe-description {
+        color: #4a5568;
+        line-height: 1.7;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+        font-weight: 400;
+    }
+
+    .comment {
+        padding: 1rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .comment:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .form-control {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        color: #2d3748;
+        font-weight: 600;
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+
+    .btn-primary {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+
+    .badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+    }
+
+    .cuisine-type {
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock content %}
