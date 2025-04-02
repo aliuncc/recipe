@@ -13,12 +13,27 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h1 class="recipe-title mb-0">{{ recipe.name }}</h1>
-                        {% if request.user == recipe.user %}
-                        <div>
-                            <a href="{% url 'update-recipe' recipe.id %}" class="btn btn-outline-primary me-2">Edit</a>
-                            <a href="{% url 'delete-recipe' recipe.id %}" class="btn btn-outline-danger">Delete</a>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if request.user.is_authenticated %}
+                                <a href="{% url 'like_recipe' recipe.id %}" class="btn btn-outline-primary like-button">
+                                    {% if request.user in recipe.likes.all %}
+                                        <i class="fas fa-heart text-danger"></i> {{ recipe.likes.count }}
+                                    {% else %}
+                                        <i class="far fa-heart"></i> {{ recipe.likes.count }}
+                                    {% endif %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary like-button">
+                                    <i class="far fa-heart"></i> {{ recipe.likes.count }}
+                                </a>
+                            {% endif %}
+                            {% if request.user == recipe.user %}
+                            <div>
+                                <a href="{% url 'update_recipe' recipe.id %}" class="btn btn-outline-primary me-2">Edit</a>
+                                <a href="{% url 'delete_recipe' recipe.id %}" class="btn btn-outline-danger">Delete</a>
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
 
                     <div class="recipe-meta mb-4">
@@ -102,7 +117,7 @@
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Posted:</span>
-                            <span class="stat-value">{{ recipe.created|date:"F j, Y" }}</span>
+                            <span class="stat-value">{{ recipe.created_at|date:"F j, Y" }}</span>
                         </div>
                     </div>
                 </div>
@@ -248,6 +263,27 @@
 
     .cuisine-type {
         margin-top: 0.5rem;
+    }
+
+    .like-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .like-button:hover {
+        background-color: #f8fafc;
+    }
+    
+    .like-button i {
+        font-size: 1.2rem;
+    }
+    
+    .like-button .text-danger {
+        color: #dc2626 !important;
     }
 </style>
 {% endblock content %}
