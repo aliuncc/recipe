@@ -41,52 +41,33 @@ def home(request):
     })
 
 def popular_recipes(request):
-    # Get recipes with the most comments
     recipes = Recipe.objects.annotate(
-        comment_count=Count('comments')
-    ).order_by('-comment_count')[:10]
-    
-    context = {
-        'recipes': recipes,
-        'title': 'Popular Recipes',
-        'users': User.objects.all()
-    }
-    return render(request, 'base/home.html', context)
+        total_likes=Count('likes'),
+        total_comments=Count('comments')
+    ).order_by('-total_likes', '-total_comments', '-created_at')
+    return render(request, 'base/home.html', {'recipes': recipes, 'title': 'Popular Recipes'})
 
 def newest_recipes(request):
-    # Get recipes from the last 7 days
-    recent_date = timezone.now() - timedelta(days=7)
-    recipes = Recipe.objects.filter(
-        created_at__gte=recent_date
-    ).order_by('-created_at')
-    
-    context = {
-        'recipes': recipes,
-        'title': 'Newest Recipes',
-        'users': User.objects.all()
-    }
-    return render(request, 'base/home.html', context)
+    recipes = Recipe.objects.all().order_by('-created_at')
+    return render(request, 'base/home.html', {'recipes': recipes, 'title': 'Newest Recipes'})
 
 def trending_cuisines(request):
-    # Get most used cuisines in the last 30 days
-    recent_date = timezone.now() - timedelta(days=30)
-    trending = Recipe.objects.filter(
-        created_at__gte=recent_date
-    ).values('cuisine').annotate(
+    # Get the most common cuisines
+    popular_cuisines = Recipe.objects.values('cuisine').annotate(
         count=Count('id')
-    ).order_by('-count')
-
-    # Get recipes from trending cuisines
-    recipes = Recipe.objects.filter(
-        cuisine__in=[item['cuisine'] for item in trending[:5]]
-    ).order_by('-created_at')
+    ).order_by('-count')[:5]
     
-    context = {
+    # Get recipes for each popular cuisine
+    recipes = []
+    for cuisine in popular_cuisines:
+        cuisine_recipes = Recipe.objects.filter(cuisine=cuisine['cuisine'])[:3]
+        recipes.extend(cuisine_recipes)
+    
+    return render(request, 'base/home.html', {
         'recipes': recipes,
         'title': 'Trending Cuisines',
-        'users': User.objects.all()
-    }
-    return render(request, 'base/home.html', context)
+        'popular_cuisines': popular_cuisines
+    })
 
 def top_rated(request):
     # Get recipes with most likes
@@ -102,15 +83,15 @@ def top_rated(request):
     return render(request, 'base/home.html', context)
 
 # Recipe Detail Page + Add Comment
-def recipe_detail(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
+def recipe_detail(request, pk):
+    recipe = get_object_or_404(Recipe, id=pk)
     comments = recipe.comments.all().order_by('-created_at')  # Get newest comments first
 
     if request.method == "POST" and request.user.is_authenticated:
         comment_body = request.POST.get("comment_body")
         if comment_body:
             Comment.objects.create(user=request.user, recipe=recipe, body=comment_body)
-            return redirect('recipe_detail', recipe_id=recipe.id)
+            return redirect('recipe_detail', pk=recipe.id)
 
     # Process ingredients list
     ingredients = [ing.strip() for ing in recipe.ingredients.split('\n') if ing.strip()]
@@ -142,37 +123,25 @@ def create_recipe(request):
 
 # Update Recipe
 @login_required
-def update_recipe(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    
-    # Check if the user is the owner of the recipe
-    if request.user != recipe.user:
-        return redirect('home')
-    
-    form = RecipeForm(instance=recipe)
-    
-    if request.method == "POST":
+def update_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
+    if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES, instance=recipe)
         if form.is_valid():
             form.save()
-            return redirect('recipe_detail', recipe_id=recipe.id)
-    
-    return render(request, 'base/recipe_form.html', {'form': form})
+            return redirect('recipe_detail', pk=recipe.pk)
+    else:
+        form = RecipeForm(instance=recipe)
+    return render(request, 'base/recipe_form.html', {'form': form, 'recipe': recipe})
 
 # Delete Recipe
 @login_required
-def delete_recipe(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    
-    # Check if the user is the owner of the recipe
-    if request.user != recipe.user:
-        return redirect('home')
-    
-    if request.method == "POST":
+def delete_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
+    if request.method == 'POST':
         recipe.delete()
         return redirect('home')
-    
-    return render(request, 'base/delete.html', {'obj': recipe})
+    return render(request, 'base/delete.html', {'recipe': recipe})
 
 # Login View
 def login_user(request):
@@ -331,14 +300,27 @@ def delete_blog(request, blog_id):
 
 def tag_recipes(request, tag_slug):
     tag = get_object_or_404(Tag, slug=tag_slug)
-    recipes = Recipe.objects.filter(tags=tag).order_by('-created_at')
-    users = User.objects.all()
-    tags = Tag.objects.all()
-    
+    recipes = Recipe.objects.filter(tags=tag)
     return render(request, 'base/home.html', {
         'recipes': recipes,
-        'users': users,
-        'tags': tags,
-        'selected_tag': tag_slug,
-        'tag_name': tag.name
+        'tag_name': tag.name,
+        'selected_tag': tag_slug
     })
+
+@login_required
+def like_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, pk=pk)
+    if request.user in recipe.likes.all():
+        recipe.likes.remove(request.user)
+    else:
+        recipe.likes.add(request.user)
+    return redirect('recipe_detail', pk=pk)
+
+@login_required
+def add_comment(request, pk):
+    recipe = get_object_or_404(Recipe, pk=pk)
+    if request.method == 'POST':
+        comment_body = request.POST.get('comment_body')
+        if comment_body:
+            Comment.objects.create(user=request.user, recipe=recipe, body=comment_body)
+    return redirect('recipe_detail', pk=pk)

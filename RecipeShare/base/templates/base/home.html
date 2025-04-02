@@ -10,10 +10,9 @@
             <img src="{% static 'images/icons/search.svg' %}" alt="Search" class="search-icon">
         </h2>
         <ul class="sidebar-links">
-            <li><a href="{% url 'popular-recipes' %}">Popular Recipes</a></li>
-            <li><a href="{% url 'newest-recipes' %}">Newest Recipes</a></li>
-            <li><a href="{% url 'trending-cuisines' %}">Trending Cuisines</a></li>
-            <li><a href="{% url 'top-rated' %}">Top Rated</a></li>
+            <li><a href="{% url 'popular_recipes' %}" class="{% if request.resolver_match.url_name == 'popular_recipes' %}active{% endif %}">Popular Recipes</a></li>
+            <li><a href="{% url 'newest_recipes' %}" class="{% if request.resolver_match.url_name == 'newest_recipes' %}active{% endif %}">Newest Recipes</a></li>
+            <li><a href="{% url 'trending_cuisines' %}" class="{% if request.resolver_match.url_name == 'trending_cuisines' %}active{% endif %}">Trending Cuisines</a></li>
         </ul>
 
         <!-- Tag Filters -->
