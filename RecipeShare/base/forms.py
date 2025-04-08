@@ -21,10 +21,17 @@ class MyUserCreationForm(UserCreationForm):
         return user
 
 # User Profile Update Form
-class UserForm(ModelForm):
+class UserProfileForm(ModelForm):
     class Meta:
         model = User
-        fields = ['avatar', 'name', 'email', 'bio']
+        fields = ['username', 'name', 'email', 'bio', 'avatar']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form__input'}),
+            'name': forms.TextInput(attrs={'class': 'form__input'}),
+            'email': forms.EmailInput(attrs={'class': 'form__input'}),
+            'bio': forms.Textarea(attrs={'class': 'form__input', 'rows': 4}),
+            'avatar': forms.FileInput(attrs={'class': 'form__input'}),
+        }
 
 # Recipe Creation Form
 class RecipeForm(ModelForm):

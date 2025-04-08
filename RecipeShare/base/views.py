@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .models import Recipe, Comment, User, Blog, BlogComment, Tag
-from .forms import RecipeForm, MyUserCreationForm, BlogForm
+from .forms import RecipeForm, MyUserCreationForm, BlogForm, UserProfileForm
 
 # Home Page (Display Recipes)
 from django.shortcuts import render
@@ -188,11 +188,24 @@ def logout_user(request):
     logout(request)
     return redirect("home")
 
-
-
 def profile(request, username):
-    user = get_object_or_404(User, username=username)  # Get user or return 404
-    return render(request, 'base/profile.html', {'user': user})
+    user = get_object_or_404(User, username=username)
+    created_recipes = Recipe.objects.filter(user=user).order_by('-created_at')
+    liked_recipes = Recipe.objects.filter(likes=user).order_by('-created_at')
+    blog_comments = BlogComment.objects.filter(user=user).order_by('-created_at')
+    recipe_comments = Comment.objects.filter(user=user).order_by('-created_at')
+    liked_blogs = Blog.objects.filter(likes=user).order_by('-created_at')
+    
+    context = {
+        'user': user,
+        'created_recipes': created_recipes,
+        'liked_recipes': liked_recipes,
+        'blog_comments': blog_comments,
+        'recipe_comments': recipe_comments,
+        'liked_blogs': liked_blogs,
+    }
+    return render(request, 'base/profile.html', context)
+
 
 def blog(request):
     q = request.GET.get('q', '')
@@ -310,10 +323,11 @@ def tag_recipes(request, tag_slug):
 @login_required
 def like_recipe(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
-    if request.user in recipe.likes.all():
-        recipe.likes.remove(request.user)
-    else:
-        recipe.likes.add(request.user)
+    if request.method == 'POST':
+        if request.user in recipe.likes.all():
+            recipe.likes.remove(request.user)
+        else:
+            recipe.likes.add(request.user)
     return redirect('recipe_detail', pk=pk)
 
 @login_required
@@ -324,3 +338,16 @@ def add_comment(request, pk):
         if comment_body:
             Comment.objects.create(user=request.user, recipe=recipe, body=comment_body)
     return redirect('recipe_detail', pk=pk)
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    form = UserProfileForm(instance=user)
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile', username=user.username)
+    
+    return render(request, 'base/edit_profile.html', {'form': form})

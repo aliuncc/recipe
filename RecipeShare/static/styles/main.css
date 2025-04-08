@@ -1,3 +1,120 @@
 body {
     background-color: aquamarine;
 }
+
+/* Like Button Styles */
+.like-form {
+    display: inline-block;
+    margin: 0;
+}
+
+.btn--main.liked {
+    background-color: #ff4d4d;
+    color: white;
+    border: 2px solid #ff4d4d;
+}
+
+.btn--main.liked:hover {
+    background-color: #ff3333;
+    border-color: #ff3333;
+}
+
+.btn--main:not(.liked) {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 2px solid #ddd;
+}
+
+.btn--main:not(.liked):hover {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+}
+
+/* Recipe Actions */
+.recipe-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.like-count {
+    font-size: 0.9rem;
+    color: #ff4d4d;
+    font-weight: 500;
+}
+
+/* Blog Grid */
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.blog-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: white;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.blog-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.blog-details {
+    padding: 15px;
+}
+
+.blog-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #2d3748;
+}
+
+.blog-excerpt {
+    color: #4a5568;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.blog-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #718096;
+    margin-bottom: 10px;
+}
+
+.blog-author a {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.blog-author a:hover {
+    text-decoration: underline;
+}
+
+.blog-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.blog-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}

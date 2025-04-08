@@ -45,12 +45,16 @@
             {% if request.user.is_authenticated %}
                 <form method="POST" action="{% url 'like_blog' blog.id %}" class="like-form">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn--like {% if request.user in blog.likes.all %}liked{% endif %}">
-                        ❤️ {{ blog.like_count }}
+                    <button type="submit" class="btn btn--main {% if request.user in blog.likes.all %}liked{% endif %}">
+                        {% if request.user in blog.likes.all %}
+                            ❤️ Liked ({{ blog.like_count }})
+                        {% else %}
+                            🤍 Like ({{ blog.like_count }})
+                        {% endif %}
                     </button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}" class="btn btn--like">❤️ {{ blog.like_count }}</a>
+                <a href="{% url 'login' %}" class="btn btn--main">🤍 Like ({{ blog.like_count }})</a>
             {% endif %}
         </div>
 

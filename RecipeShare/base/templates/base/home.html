@@ -37,6 +37,8 @@
         {% if request.user.is_authenticated %}
             <a href="{% url 'create_recipe' %}" class="btn btn--main">+ Create Recipe</a>
         {% endif %}
+
+        
     </aside>
 
     <!-- MIDDLE COLUMN: Recipes Grid -->
@@ -83,7 +85,7 @@
 
                     <!-- "Posted by" Below the Image -->
                     <div class="recipe-posted">
-                        <p>@ <a href="#">{{ recipe.user.name|default:recipe.user.username }}</a></p>
+                        <p>@ {% if recipe.user.username %}<a href="{% url 'profile' recipe.user.username %}">{% endif %}{{ recipe.user.name|default:recipe.user.username }}{% if recipe.user.username %}</a>{% endif %}</p>
                     </div>
                 </div>
             {% endfor %}
@@ -92,6 +94,7 @@
         {% if not request.user.is_authenticated %}
             <p class="login-message"><a href="{% url 'login' %}">Login</a> to add a recipe.</p>
         {% endif %}
+
     </div>
 
     <!-- RIGHT COLUMN: Discover Users -->
@@ -101,16 +104,22 @@
         </h2>
         <ul class="sidebar-users">
             {% for user in users %}
+                {% if user.username %}
                 <li class="user-item">
-                    <a href="#" class="user-link">
+                    <a href="{% url 'profile' user.username %}" class="user-link">
                         <div class="avatar avatar--small">
-                            <img src="{% static 'images/avatar.svg' %}" alt="{{ user.username }}">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+                            {% else %}
+                                <img src="{% static 'images/avatar.svg' %}" alt="{{ user.username }}">
+                            {% endif %}
                         </div>
                         <p class="user-name">
                             <span>{{ user.name|default:user.username }}</span>
                         </p>
                     </a>
                 </li>
+                {% endif %}
             {% endfor %}
         </ul>
     </aside>
