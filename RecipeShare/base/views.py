@@ -351,3 +351,6 @@ def edit_profile(request):
             return redirect('profile', username=user.username)
     
     return render(request, 'base/edit_profile.html', {'form': form})
+
+def social(request):
+    return render(request, 'social.html')
