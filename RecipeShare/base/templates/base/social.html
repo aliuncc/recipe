@@ -1,68 +1,100 @@
 {% extends "main.html" %}
 {% block content %}
-<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
-  <h2 style="color:#146325; margin-bottom: 2rem; text-align:center; font-size: 2.5rem;">Your Social Network</h2>
-  
+<div class="container">
+  <h2 style="color:#146325; margin-bottom: 2rem; text-align:center;">Your Social Network</h2>
   <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;">
-    <!-- Following Section -->
-    <div style="flex:1 1 400px; min-width:300px; background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="color:#2d3a4a; border-bottom:2px solid #146325; padding-bottom:0.5rem; margin-bottom:1.5rem; font-size: 1.5rem;">Following</h3>
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        {% if following_users %}
-          {% for user in following_users %}
-            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-radius: 8px; background: #f8f9fa; transition: all 0.3s ease;">
-              <img src="{{ user.avatar.url|default:'/static/images/avatar.svg' }}" alt="{{ user.username }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
-              <div>
-                <a href="{% url 'profile' user.username %}" style="text-decoration: none; color: #2d3a4a; font-weight: 600; font-size: 1.1rem;">{{ user.username }}</a>
-                {% if user.bio %}
-                  <p style="margin: 0.25rem 0; color: #666; font-size: 0.9rem;">{{ user.bio|truncatechars:50 }}</p>
-                {% endif %}
-                <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: #888;">
-                  <span>{{ user.recipe_set.count }} recipes</span>
-                  <span>{{ user.followers.count }} followers</span>
+    <div style="flex:1 1 300px; min-width:280px;">
+      <h3 style="color:#2d3a4a; border-bottom:2px solid #146325; padding-bottom:0.5rem; margin-bottom:1rem;">Following</h3>
+      <ul style="list-style:none; padding:0;">
+        {% if following %}
+          {% for user in following %}
+            <li style="margin-bottom: 1rem; padding: 0.5rem; border-radius: 8px; background-color: #f8f9fa;">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <img src="{{ user.following_user.avatar.url }}" 
+                     alt="{{ user.following_user.username }}'s avatar" 
+                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <a href="{% url 'profile' user.following_user.username %}" 
+                     class="user-link" 
+                     style="color: #2d3a4a; text-decoration: none; font-weight: 500;">
+                    {{ user.following_user.username }}
+                  </a>
+                  <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                    {{ user.following_user.recipes.count }} recipes • 
+                    {{ user.following_user.followers.count }} followers
+                  </p>
                 </div>
               </div>
-            </div>
+            </li>
           {% endfor %}
         {% else %}
-          <div style="text-align: center; padding: 2rem; color: #888;">
-            <p style="margin-bottom: 1rem;">You're not following anyone yet.</p>
-            <a href="{% url 'home' %}" style="color: #146325; text-decoration: none;">Discover users to follow →</a>
-          </div>
+          <li style="color:#888; padding: 1rem; text-align: center; background-color: #f8f9fa; border-radius: 8px;">
+            No following yet.
+          </li>
         {% endif %}
-      </div>
+      </ul>
     </div>
-
-    <!-- Activity Feed Section -->
-    <div style="flex:1 1 400px; min-width:300px; background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="color:#2d3a4a; border-bottom:2px solid #146325; padding-bottom:0.5rem; margin-bottom:1.5rem; font-size: 1.5rem;">Recent Activity</h3>
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        {% if following_users %}
-          {% for user in following_users %}
-            {% for recipe in user.recipe_set.all|slice:":2" %}
-              <div style="padding: 1rem; border-radius: 8px; background: #f8f9fa;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <img src="{{ user.avatar.url|default:'/static/images/avatar.svg' }}" alt="{{ user.username }}" style="width: 30px; height: 30px; border-radius: 50%;">
-                  <a href="{% url 'profile' user.username %}" style="text-decoration: none; color: #2d3a4a; font-weight: 600;">{{ user.username }}</a>
-                  <span style="color: #888; font-size: 0.9rem;">created a new recipe</span>
-                </div>
-                <a href="{% url 'recipe_detail' recipe.id %}" style="text-decoration: none; color: #146325; font-weight: 600;">{{ recipe.name }}</a>
-                <p style="margin: 0.5rem 0; color: #666; font-size: 0.9rem;">{{ recipe.description|truncatechars:100 }}</p>
-                <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; color: #888;">
-                  <span>{{ recipe.cuisine }}</span>
-                  <span>•</span>
-                  <span>{{ recipe.total_likes }} likes</span>
+    <div style="flex:1 1 300px; min-width:280px;">
+      <h3 style="color:#2d3a4a; border-bottom:2px solid #146325; padding-bottom:0.5rem; margin-bottom:1rem;">Friends</h3>
+      <ul style="list-style:none; padding:0;">
+        {% if friends %}
+          {% for user in friends %}
+            <li style="margin-bottom: 1rem; padding: 0.5rem; border-radius: 8px; background-color: #f8f9fa;">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <img src="{{ user.user.avatar.url }}" 
+                     alt="{{ user.user.username }}'s avatar" 
+                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <a href="{% url 'profile' user.user.username %}" 
+                     class="user-link" 
+                     style="color: #2d3a4a; text-decoration: none; font-weight: 500;">
+                    {{ user.user.username }}
+                  </a>
+                  <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                    {{ user.user.recipes.count }} recipes • 
+                    {{ user.user.followers.count }} followers
+                  </p>
                 </div>
               </div>
-            {% endfor %}
+            </li>
           {% endfor %}
         {% else %}
-          <div style="text-align: center; padding: 2rem; color: #888;">
-            <p style="margin-bottom: 1rem;">No recent activity to show.</p>
-            <p>Follow some users to see their recipes here!</p>
-          </div>
+          <li style="color:#888; padding: 1rem; text-align: center; background-color: #f8f9fa; border-radius: 8px;">
+            No friends yet.
+          </li>
         {% endif %}
-      </div>
+      </ul>
+    </div>
+    <div style="flex:1 1 300px; min-width:280px;">
+      <h3 style="color:#2d3a4a; border-bottom:2px solid #146325; padding-bottom:0.5rem; margin-bottom:1rem;">Followers</h3>
+      <ul style="list-style:none; padding:0;">
+        {% if regular_followers %}
+          {% for user in regular_followers %}
+            <li style="margin-bottom: 1rem; padding: 0.5rem; border-radius: 8px; background-color: #f8f9fa;">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <img src="{{ user.user.avatar.url }}" 
+                     alt="{{ user.user.username }}'s avatar" 
+                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <a href="{% url 'profile' user.user.username %}" 
+                     class="user-link" 
+                     style="color: #2d3a4a; text-decoration: none; font-weight: 500;">
+                    {{ user.user.username }}
+                  </a>
+                  <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                    {{ user.user.recipes.count }} recipes • 
+                    {{ user.user.followers.count }} followers
+                  </p>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        {% else %}
+          <li style="color:#888; padding: 1rem; text-align: center; background-color: #f8f9fa; border-radius: 8px;">
+            No followers yet.
+          </li>
+        {% endif %}
+      </ul>
     </div>
   </div>
 </div>

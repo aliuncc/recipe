@@ -373,5 +373,25 @@ def edit_profile(request):
     
     return render(request, 'base/edit_profile.html', {'form': form})
 
+@login_required
 def social(request):
-    return render(request, 'social.html')
+    # Get users the current user is following
+    following = UserFollowing.objects.filter(user=request.user)
+    
+    # Get users who follow the current user
+    followers = UserFollowing.objects.filter(following_user=request.user)
+    
+    # Get mutual followers (friends)
+    following_usernames = set(following.values_list('following_user__username', flat=True))
+    followers_usernames = set(followers.values_list('user__username', flat=True))
+    mutual_followers_usernames = following_usernames.intersection(followers_usernames)
+    
+    # Separate followers into friends and regular followers
+    friends = followers.filter(user__username__in=mutual_followers_usernames)
+    regular_followers = followers.exclude(user__username__in=mutual_followers_usernames)
+    
+    return render(request, 'base/social.html', {
+        'following': following,
+        'friends': friends,
+        'regular_followers': regular_followers
+    })
