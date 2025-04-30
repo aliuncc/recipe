@@ -80,8 +80,20 @@ def logout_user(request):
     logout(request)
     return redirect("home")
 
-
-
 def profile(request, username):
     user = get_object_or_404(User, username=username)  # Get user or return 404
     return render(request, 'base/profile.html', {'user': user})
+
+@login_required
+def social(request):
+    following_users = request.user.following.all()  # Get all users that the current user is following
+    return render(request, 'base/social.html', {
+        'following_users': following_users,
+    })
+
+@login_required
+def follow_user(request, username):
+    target_user = get_object_or_404(User, username=username)
+    if target_user != request.user:
+        request.user.following.add(target_user)  # Add the target user to the current user's following list
+    return redirect('profile', username=username)

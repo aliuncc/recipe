@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from .models import Recipe, Comment, User, Blog, BlogComment, Tag
+from .models import Recipe, Comment, User, Blog, BlogComment, Tag, UserFollowing
 from .forms import RecipeForm, MyUserCreationForm, BlogForm, UserProfileForm
 
 # Home Page (Display Recipes)
@@ -195,7 +195,13 @@ def profile(request, username):
     blog_comments = BlogComment.objects.filter(user=user).order_by('-created_at')
     recipe_comments = Comment.objects.filter(user=user).order_by('-created_at')
     liked_blogs = Blog.objects.filter(likes=user).order_by('-created_at')
-    
+
+    is_following = False
+    if request.user.is_authenticated and request.user != user:
+        is_following = UserFollowing.objects.filter(user=request.user, following_user=user).exists()
+    followers_count = UserFollowing.objects.filter(following_user=user).count()
+    following_count = UserFollowing.objects.filter(user=user).count()
+
     context = {
         'user': user,
         'created_recipes': created_recipes,
@@ -203,9 +209,24 @@ def profile(request, username):
         'blog_comments': blog_comments,
         'recipe_comments': recipe_comments,
         'liked_blogs': liked_blogs,
+        'is_following': is_following,
+        'followers_count': followers_count,
+        'following_count': following_count,
     }
     return render(request, 'base/profile.html', context)
 
+@login_required
+def follow_user(request, username):
+    target_user = get_object_or_404(User, username=username)
+    if target_user != request.user:
+        UserFollowing.objects.get_or_create(user=request.user, following_user=target_user)
+    return redirect('profile', username=username)
+
+@login_required
+def unfollow_user(request, username):
+    target_user = get_object_or_404(User, username=username)
+    UserFollowing.objects.filter(user=request.user, following_user=target_user).delete()
+    return redirect('profile', username=username)
 
 def blog(request):
     q = request.GET.get('q', '')

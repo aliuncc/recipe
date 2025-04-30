@@ -106,3 +106,15 @@ class BlogComment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.user.username} on {self.blog.title}'
+
+
+class UserFollowing(models.Model):
+    user = models.ForeignKey(User, related_name="following_relations", on_delete=models.CASCADE)
+    following_user = models.ForeignKey(User, related_name="follower_relations", on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'following_user')
+
+    def __str__(self):
+        return f"{self.user.username} follows {self.following_user.username}"
