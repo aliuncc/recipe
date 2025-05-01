@@ -1,0 +1,92 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="blog-detail">
+        <div class="blog-header">
+            <h1>{{ blog.title }}</h1>
+        </div>
+
+        <div class="blog-meta-section">
+            <div class="blog-meta">
+                <span class="meta-item">
+                    <i class="fas fa-user"></i>
+                    By <a href="{% url 'profile' blog.user.username %}">{{ blog.user.username }}</a>
+                </span>
+                <span class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    {{ blog.created_at|date:"F d, Y" }}
+                </span>
+            </div>
+            {% if request.user == blog.user %}
+                <div class="blog-actions">
+                    <a href="{% url 'edit_blog' blog.id %}" class="btn btn-edit">Edit Blog</a>
+                    <a href="{% url 'delete_blog' blog.id %}" class="btn btn-danger">Delete Blog</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="blog-tags">
+            {% for tag in blog.tags.all %}
+                <a href="{% url 'tag_blogs' tag.slug %}" class="tag">{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="blog-image">
+            <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+        </div>
+
+        <div class="blog-content">
+            {{ blog.content|linebreaks }}
+        </div>
+
+        <div class="blog-actions">
+            {% if request.user.is_authenticated %}
+                <form method="POST" action="{% url 'like_blog' blog.id %}" class="like-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--main {% if request.user in blog.likes.all %}liked{% endif %}">
+                        {% if request.user in blog.likes.all %}
+                            ❤️ Liked ({{ blog.like_count }})
+                        {% else %}
+                            🤍 Like ({{ blog.like_count }})
+                        {% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn--main">🤍 Like ({{ blog.like_count }})</a>
+            {% endif %}
+        </div>
+
+        <div class="comments-section">
+            <h2>Comments</h2>
+            
+            {% if request.user.is_authenticated %}
+                <form method="POST" action="{% url 'add_blog_comment' blog.id %}" class="comment-form">
+                    {% csrf_token %}
+                    <textarea name="content" placeholder="Write a comment..." required></textarea>
+                    <button type="submit" class="btn btn--main">Post Comment</button>
+                </form>
+            {% else %}
+                <p class="login-message">Please <a href="{% url 'login' %}">sign in</a> to leave a comment.</p>
+            {% endif %}
+
+            <div class="comments-list">
+                {% for comment in blog.comments.all %}
+                    <div class="comment">
+                        <div class="comment-header">
+                            <span class="comment-author">{{ comment.user.username }}</span>
+                            <span class="comment-date">{{ comment.created_at|date:"F d, Y" }}</span>
+                        </div>
+                        <div class="comment-content">
+                            {{ comment.content|linebreaks }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No comments yet. Be the first to comment!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %} 

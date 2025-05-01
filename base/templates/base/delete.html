@@ -1,0 +1,42 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body p-5 text-center">
+                    <h3 class="mb-4">Delete Recipe</h3>
+                    <p class="lead mb-4">Are you sure you want to delete "{{ recipe.name }}"?</p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <a href="{% url 'recipe_detail' recipe.pk %}" class="btn btn-outline-secondary btn-lg px-5 me-3">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg px-5">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .btn {
+        font-weight: 500;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+    }
+
+    .lead {
+        color: #4a5568;
+    }
+</style>
+{% endblock content %}
